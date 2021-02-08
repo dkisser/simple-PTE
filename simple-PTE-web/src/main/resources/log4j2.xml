@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Properties>
+        <property name="buffer_size">1048576</property>
+        <property name="logstack.application.home">app</property>
+        <property name="log_home">logs/${logstack.application.home}</property>
+        <property name="buffer_size">1048</property>
+        <property name="enable_log_location">true</property>
+        <property name="immediate_flush">true</property>
+        <property name="default_pattern">
+            <![CDATA[ [%d{yyyy-MM-dd HH:mm:ss:SSS}] [%-5level] [%MDC{traceId}] [%t] [%C{1}:%L] %msg%n ]]>
+        </property>
+    </Properties>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${default_pattern}"/>
+            <!--控制台只输出level及其以上级别的信息（onMatch），其他的直接拒绝（onMismatch）-->
+            <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
+        </Console>
+
+        <!-- 这个会打印出所有的info及以下级别的信息，每次大小超过size，则这size大小的日志会自动存入按年份-月份建立的文件夹下面并进行压缩，作为存档-->
+        <RollingFile name="busi" fileName="${log_home}/${logstack.application.home}-busi.log"
+                     filePattern="${log_home}/${logstack.application.home}-busi-%d{yyyy-MM-dd}_%i.log.gz"
+                     immediateFlush="${immediate_flush}" bufferSize="${buffer_size}">
+            <!--控制台只输出level及以上级别的信息（onMatch），其他的直接拒绝（onMismatch）-->
+            <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="${default_pattern}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="1024MB"/>
+            </Policies>
+            <!-- DefaultRolloverStrategy属性如不设置，则默认为最多同一文件夹下7个文件开始覆盖-->
+            <DefaultRolloverStrategy min="1" max="999"/>
+        </RollingFile>
+
+        <!-- 这个会打印出所有的info及以下级别的信息，每次大小超过size，则这size大小的日志会自动存入按年份-月份建立的文件夹下面并进行压缩，作为存档-->
+        <RollingFile name="default" fileName="${log_home}/${logstack.application.home}-default.log"
+                     filePattern="${log_home}/${logstack.application.home}-default-%d{yyyy-MM-dd}_%i.log.gz"
+                     immediateFlush="${immediate_flush}" bufferSize="${buffer_size}">
+            <!--控制台只输出level及以上级别的信息（onMatch），其他的直接拒绝（onMismatch）-->
+            <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="${default_pattern}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="1024MB"/>
+            </Policies>
+            <!-- DefaultRolloverStrategy属性如不设置，则默认为最多同一文件夹下7个文件开始覆盖-->
+            <DefaultRolloverStrategy min="1" max="999"/>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Logger name="busi" level="info" additivity="false" includeLocation="${enable_log_location}">
+            <AppenderRef ref="busi"/>
+            <AppenderRef ref="default"/>
+        </Logger>
+        <Logger name="default" level="info" additivity="false" includeLocation="${enable_log_location}">
+            <AppenderRef ref="busi"/>
+        </Logger>
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="default"/>
+            <AppenderRef ref="busi"/>
+        </Root>
+    </Loggers>
+</Configuration>
